@@ -1,36 +1,22 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useState } from "react";
-import gallery1 from "@/assets/gallery-1.jpg";
-import gallery2 from "@/assets/gallery-2.jpg";
-import gallery3 from "@/assets/gallery-3.jpg";
-import gallery4 from "@/assets/gallery-4.jpg";
-import gallery5 from "@/assets/gallery-5.jpg";
-import gallery6 from "@/assets/gallery-6.jpg";
-
-const categories = ["All", "Bridal", "Party", "Editorial"];
-
-const galleryItems = [
-  { src: gallery1, category: "Bridal", title: "Traditional Bridal Look" },
-  { src: gallery2, category: "Party", title: "Glamorous Party Look" },
-  { src: gallery3, category: "Editorial", title: "Natural Dewy Glow" },
-  { src: gallery4, category: "Bridal", title: "Reception Glamour" },
-  { src: gallery5, category: "Bridal", title: "Engagement Ceremony" },
-  { src: gallery6, category: "Editorial", title: "Bold Editorial Look" },
-];
+import { useGalleryItems } from "@/hooks/useCmsData";
 
 const GallerySection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [activeCategory, setActiveCategory] = useState("All");
+  const { data: galleryItems } = useGalleryItems();
+
+  const categories = ["All", ...Array.from(new Set((galleryItems || []).map((i) => i.category)))];
 
   const filteredItems = activeCategory === "All"
-    ? galleryItems
-    : galleryItems.filter((item) => item.category === activeCategory);
+    ? galleryItems || []
+    : (galleryItems || []).filter((item) => item.category === activeCategory);
 
   return (
     <section id="gallery" className="py-20 md:py-28 bg-gradient-section" ref={ref}>
       <div className="container mx-auto px-4">
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -46,7 +32,6 @@ const GallerySection = () => {
           </p>
         </motion.div>
 
-        {/* Filter */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -68,11 +53,10 @@ const GallerySection = () => {
           ))}
         </motion.div>
 
-        {/* Gallery Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {filteredItems.map((item, index) => (
             <motion.div
-              key={item.title}
+              key={item.id}
               layout
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -81,7 +65,7 @@ const GallerySection = () => {
               className="group relative rounded-2xl overflow-hidden shadow-card cursor-pointer aspect-[3/4]"
             >
               <img
-                src={item.src}
+                src={item.image_url}
                 alt={item.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 loading="lazy"
